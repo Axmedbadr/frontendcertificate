@@ -67,6 +67,16 @@ export default function Payments() {
                 <span>Expected Total</span><span className="text-brand-700">${target.feeAmount} USD</span>
               </div>
             </div>
+            <div className="mb-3.5">
+              <div className="text-xs font-bold text-slate-500 uppercase mb-1.5">Payment Voucher</div>
+              {target.voucherDataUrl ? (
+                <a href={target.voucherDataUrl} download={target.voucherFileName} className="block border border-slate-200 rounded-lg overflow-hidden">
+                  <img src={target.voucherDataUrl} alt={target.voucherFileName} className="w-full max-h-56 object-contain bg-slate-50" />
+                </a>
+              ) : (
+                <div className="text-sm text-slate-400 italic border border-dashed border-slate-300 rounded-lg p-3 text-center">No voucher uploaded</div>
+              )}
+            </div>
             <p className="text-sm text-slate-500 mb-3.5">Confirm the payment voucher matches the amount above, then select the account funds were received into.</p>
             <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-500 mb-5">Received Account *
               <select className="px-3 py-2.5 rounded-lg border border-slate-300 text-sm" value={account} onChange={e => setAccount(e.target.value as AccountName)}>

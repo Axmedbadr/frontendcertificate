@@ -15,6 +15,15 @@ export default function FieldCollector() {
   const [rates, setRates] = useState<Record<string, number>>({ ...speciesRates });
   const [rows, setRows] = useState<AnimalRow[]>([emptyAnimalRow()]);
   const [voucherFile, setVoucherFile] = useState<File | null>(null);
+  const [voucherDataUrl, setVoucherDataUrl] = useState<string | null>(null);
+
+  const onVoucherChange = (file: File | null) => {
+    setVoucherFile(file);
+    if (!file) { setVoucherDataUrl(null); return; }
+    const reader = new FileReader();
+    reader.onload = () => setVoucherDataUrl(reader.result as string);
+    reader.readAsDataURL(file);
+  };
 
   const updateRow = (i: number, key: keyof AnimalRow, val: string) =>
     setRows(prev => prev.map((r, idx) => idx === i ? { ...r, [key]: val } : r));
@@ -49,11 +58,12 @@ export default function FieldCollector() {
       rvf: form.rvf, fmd: form.fmd, brucella: form.brucella, testType: form.testType,
       vaccination: form.vaccination, clinicalExam: form.clinicalExam, remarks: form.remarks,
       feeAmount: 500 + totalFee,
+      voucherFileName: voucherFile?.name, voucherDataUrl: voucherDataUrl || undefined,
     };
     addCertificate(cert);
     setForm({ exporter:'', importer:'', country:'', port:'', transport:'', loadingPlace:'', clinicalExam:'', quarantineDays:'', quarantinePlace:'', rvf:'', fmd:'', brucella:'', testType:'', vaccination:'', remarks:'' });
     setRows([emptyAnimalRow()]);
-    setVoucherFile(null);
+    onVoucherChange(null);
     alert('Application submitted — waiting for payment verification');
   };
 
@@ -213,9 +223,11 @@ export default function FieldCollector() {
           </div>
           <div className="flex flex-col gap-1.5">
             <div className="text-xs font-bold text-slate-500">{t.fcUploadVoucher} *</div>
-            <label className="h-28 border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center text-xs text-slate-400 cursor-pointer">
-              {voucherFile ? voucherFile.name : 'Drop payment voucher'}
-              <input type="file" className="hidden" onChange={e => setVoucherFile(e.target.files?.[0] || null)} />
+            <label className="h-28 border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center text-xs text-slate-400 cursor-pointer overflow-hidden">
+              {voucherDataUrl ? (
+                <img src={voucherDataUrl} alt={voucherFile?.name} className="h-full w-full object-contain" />
+              ) : voucherFile ? voucherFile.name : 'Drop payment voucher'}
+              <input type="file" accept="image/*,.pdf" className="hidden" onChange={e => onVoucherChange(e.target.files?.[0] || null)} />
             </label>
           </div>
         </div>

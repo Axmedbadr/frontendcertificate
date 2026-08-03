@@ -40,6 +40,8 @@ export interface Certificate {
   clinicalExam?: string;
   remarks?: string;
   feeAmount?: number;
+  voucherFileName?: string;
+  voucherDataUrl?: string;
 }
 
 export interface Payment {
