@@ -10,7 +10,7 @@ import { translations, Lang } from '../i18n/translations';
 
 interface AppState {
   lang: Lang; setLang: (l: Lang) => void; toggleLang: () => void;
-  t: typeof translations['en'];
+  t: typeof translations[Lang];
   currentRole: Role; setCurrentRole: (r: Role) => void;
   certificates: Certificate[];
   addCertificate: (c: Certificate) => void;
