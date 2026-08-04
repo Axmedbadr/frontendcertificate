@@ -4,11 +4,15 @@ import BarChart from '../components/BarChart';
 
 export default function Observer() {
   const { certificates, accounts, incomes } = useApp();
-  const certsMonth = certificates.filter(c => c.issue_date.startsWith('2026-07')).length;
+  const now = new Date();
+  const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const certsMonth = certificates.filter(c => c.issue_date.startsWith(currentMonthKey)).length;
   const totalBalance = Object.values(accounts).reduce((a, b) => a + b, 0);
-  const months = ['Feb','Mar','Apr','May','Jun','Jul'];
-  const certsIssued = [34,41,38,47,52,58];
-  const certBars = months.map((m, i) => ({ label: m, value: certsIssued[i] }));
+  const last6Months = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+    return { key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`, label: d.toLocaleString('en', { month: 'short' }) };
+  });
+  const certBars = last6Months.map(m => ({ label: m.label, value: certificates.filter(c => c.issue_date.startsWith(m.key)).length }));
 
   return (
     <div className="max-w-6xl">

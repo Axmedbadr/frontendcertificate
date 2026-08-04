@@ -82,6 +82,7 @@ export default function CertificateList() {
                 <td className="p-3 text-slate-500">{c.issue_date}</td>
               </tr>
             ))}
+            {rows.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-slate-400">No certificates yet.</td></tr>}
           </tbody>
         </table>
       </div>
