@@ -3,17 +3,17 @@ import { useApp } from '../context/AppContext';
 import { AccountName } from '../types';
 
 const categories = ['Office Rent','Salary','Fuel','Electricity','Internet','Printing','Medicine','Laboratory','Other'];
-const accountOptions: AccountName[] = ['Cash', 'Bank', 'ZAAD', 'EVC Plus', 'Premier Wallet'];
+const accountOptions: AccountName[] = ['Darasalam Bank Account', 'Dahabshiil Bank Account'];
 
 export default function Expenses() {
   const { expenses, addExpense } = useApp();
-  const [form, setForm] = useState({ category: categories[0], amount: '', description: '', account: 'Cash' as AccountName });
+  const [form, setForm] = useState({ category: categories[0], amount: '', description: '', account: accountOptions[0] });
   const total = expenses.reduce((a, b) => a + b.amount, 0);
 
   const submit = () => {
     if (!form.amount) return;
     addExpense({ id: Date.now(), category: form.category, amount: Number(form.amount), description: form.description, date: new Date().toISOString().slice(0,10), account: form.account });
-    setForm({ category: categories[0], amount: '', description: '', account: 'Cash' });
+    setForm({ category: categories[0], amount: '', description: '', account: accountOptions[0] });
   };
 
   return (

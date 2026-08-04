@@ -9,7 +9,7 @@ export const initialIncomes: IncomeExpense[] = [];
 export const initialExpenses: IncomeExpense[] = [];
 
 export const initialAccounts: Record<AccountName, number> = {
-  Cash: 0, Bank: 0, ZAAD: 0, 'EVC Plus': 0, 'Premier Wallet': 0,
+  'Darasalam Bank Account': 0, 'Dahabshiil Bank Account': 0,
 };
 
 export const initialExporters: ExporterEntity[] = [

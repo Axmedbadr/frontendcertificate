@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext';
 import Modal from '../components/Modal';
 import { Certificate, AccountName } from '../types';
 
-const accountOptions: AccountName[] = ['Cash', 'Bank', 'ZAAD', 'EVC Plus', 'Premier Wallet'];
+const accountOptions: AccountName[] = ['Darasalam Bank Account', 'Dahabshiil Bank Account'];
 
 export default function Payments() {
   const { certificates, verifyPayment, auditLog } = useApp();

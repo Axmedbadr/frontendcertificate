@@ -70,4 +70,4 @@ export interface ExporterEntity { id: number; name: string; contact: string; pho
 export interface ImporterEntity { id: number; name: string; country: string; contact: string; phone: string; }
 export interface UserEntity { id: number; name: string; email: string; role: Role; status: 'active' | 'inactive'; }
 
-export type AccountName = 'Cash' | 'Bank' | 'ZAAD' | 'EVC Plus' | 'Premier Wallet';
+export type AccountName = 'Darasalam Bank Account' | 'Dahabshiil Bank Account';
