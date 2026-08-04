@@ -1,6 +1,6 @@
 export const translations = {
   en: {
-    appName: 'Horn Livestock Gate Consultant',
+    appName: 'Horn Livestock Gate',
     dashboard: 'Dashboard', observerDashboard: 'Observer Dashboard', certificateManagement: 'Certificate Management',
     payments: 'Payments', income: 'Income', expenses: 'Expenses', exporters: 'Exporters', importers: 'Importers',
     animals: 'Animals', reports: 'Reports', users: 'Users', settings: 'Settings',
@@ -26,7 +26,7 @@ export const translations = {
     reportDaily: 'Daily', reportWeekly: 'Weekly', reportMonthly: 'Monthly', reportYearly: 'Yearly', reportTo: 'to',
   },
   ar: {
-    appName: 'مستشار بوابة الثروة الحيوانية',
+    appName: 'بوابة الثروة الحيوانية',
     dashboard: 'لوحة التحكم', observerDashboard: 'لوحة المراقب', certificateManagement: 'إدارة الشهادات',
     payments: 'المدفوعات', income: 'الإيرادات', expenses: 'المصروفات', exporters: 'المصدّرون', importers: 'المستوردون',
     animals: 'الحيوانات', reports: 'التقارير', users: 'المستخدمون', settings: 'الإعدادات',
