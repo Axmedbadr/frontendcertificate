@@ -25,6 +25,29 @@ function StatementRow({ n, en, ar }: { n: number; en: string; ar: string }) {
   );
 }
 
+function OfficialStamp({ certNumber, date }: { certNumber: string; date: string }) {
+  return (
+    <svg viewBox="0 0 160 160" className="w-32 h-32" style={{ transform: 'rotate(-8deg)' }}>
+      <defs>
+        <path id="stampTopArc" d="M 18,80 A 62,62 0 0 1 142,80" fill="none" />
+        <path id="stampBottomArc" d="M 142,90 A 62,62 0 0 1 18,90" fill="none" />
+      </defs>
+      <circle cx="80" cy="80" r="70" fill="none" stroke="#b91c1c" strokeWidth="2" opacity="0.85" />
+      <circle cx="80" cy="80" r="58" fill="none" stroke="#b91c1c" strokeWidth="1.5" opacity="0.85" />
+      <text fontSize="8.5" fontWeight="bold" fill="#b91c1c" opacity="0.85" letterSpacing="1">
+        <textPath href="#stampTopArc" startOffset="50%" textAnchor="middle">FEDERAL REPUBLIC OF SOMALIA</textPath>
+      </text>
+      <text fontSize="8" fontWeight="bold" fill="#b91c1c" opacity="0.85" letterSpacing="1">
+        <textPath href="#stampBottomArc" startOffset="50%" textAnchor="middle">MINISTRY OF LIVESTOCK</textPath>
+      </text>
+      <text x="80" y="72" textAnchor="middle" fontSize="9" fontWeight="extrabold" fill="#b91c1c" opacity="0.9">VETERINARY</text>
+      <text x="80" y="84" textAnchor="middle" fontSize="9" fontWeight="extrabold" fill="#b91c1c" opacity="0.9">APPROVED</text>
+      <text x="80" y="98" textAnchor="middle" fontSize="7" fill="#b91c1c" opacity="0.85">{certNumber}</text>
+      <text x="80" y="108" textAnchor="middle" fontSize="6.5" fill="#b91c1c" opacity="0.85">{date}</text>
+    </svg>
+  );
+}
+
 export default function CertificatePrint({ cert }: { cert: Certificate }) {
   const rows = cert.animalRows || [];
   const testType = cert.testType || '____';
@@ -143,16 +166,16 @@ export default function CertificatePrint({ cert }: { cert: Certificate }) {
         </tbody>
       </table>
 
-      <div className="flex justify-between items-start text-[11px]">
+      <div className="flex justify-between items-end text-[11px]">
         <div>
           <div className="font-bold mb-2">Official Veterinary Officer</div>
-          <div className="mb-1.5">Name: ______________________________</div>
-          <div className="mb-1.5">Signature: __________________________</div>
-          <div>Date: {cert.issue_date}</div>
+          <div className="mb-1.5">Name: <span className="font-bold">{cert.approvedBy || '______________________________'}</span></div>
+          <div className="mb-1.5">
+            Signature: <span className="italic" style={{ fontFamily: 'cursive', fontSize: '15px' }}>{cert.approvedBy || '______________________________'}</span>
+          </div>
+          <div>Date: <span className="font-bold">{cert.approvalDate || cert.issue_date}</span></div>
         </div>
-        <div className="w-32 h-24 border border-dashed border-slate-400 flex items-center justify-center text-center text-slate-400 italic text-[10px] px-2">
-          [ OFFICIAL STAMP / SEAL ]
-        </div>
+        <OfficialStamp certNumber={cert.certificate_number} date={cert.approvalDate || cert.issue_date} />
       </div>
     </div>
   );

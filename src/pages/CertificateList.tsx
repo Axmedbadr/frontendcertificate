@@ -26,6 +26,7 @@ export default function CertificateList() {
   const [filter, setFilter] = useState<CertStatus | 'all'>('all');
   const [detail, setDetail] = useState<Certificate | null>(null);
   const [printTarget, setPrintTarget] = useState<Certificate | null>(null);
+  const [approverName, setApproverName] = useState('');
   const navigate = useNavigate();
   const rows = certificates.filter(c => filter === 'all' || c.status === filter);
 
@@ -70,7 +71,7 @@ export default function CertificateList() {
           </thead>
           <tbody>
             {rows.map(c => (
-              <tr key={c.id} onClick={() => setDetail(c)} className="border-b border-slate-100 last:border-0 hover:bg-slate-50 cursor-pointer">
+              <tr key={c.id} onClick={() => { setDetail(c); setApproverName(''); }} className="border-b border-slate-100 last:border-0 hover:bg-slate-50 cursor-pointer">
                 <td className="p-3 font-bold">{c.certificate_number}</td>
                 <td className="p-3">{c.exporter}</td>
                 <td className="p-3">{c.importer}</td>
@@ -129,6 +130,14 @@ export default function CertificateList() {
               <DetailRow label="Remarks" value={detail.remarks} />
             </div>
 
+            {(detail.status === 'approved' || detail.status === 'printed') && (
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 mb-3.5">
+                <div className="text-xs font-bold text-slate-500 uppercase mb-1.5">Approval</div>
+                <DetailRow label="Approved By" value={detail.approvedBy} />
+                <DetailRow label="Approval Date" value={detail.approvalDate} />
+              </div>
+            )}
+
             <div>
               <div className="text-xs font-bold text-slate-500 uppercase mb-1.5">Payment Voucher</div>
               {detail.voucherDataUrl ? (
@@ -140,12 +149,27 @@ export default function CertificateList() {
               )}
             </div>
 
+            {detail.status === 'payment_approved' && (
+              <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-500 mb-3.5">Approving Veterinary Officer *
+                <input
+                  className="px-3 py-2.5 rounded-lg border border-slate-300 text-sm font-normal"
+                  placeholder="Enter officer's full name"
+                  value={approverName}
+                  onChange={e => setApproverName(e.target.value)}
+                />
+              </label>
+            )}
+
             <div className="flex justify-end gap-2.5 mt-5">
               <button onClick={() => setDetail(null)} className="px-4 py-2 rounded-lg text-sm font-bold bg-slate-100">Close</button>
               {detail.status === 'payment_approved' && (
                 <button
-                  onClick={() => { approveCertificate(detail); setDetail(d => d ? { ...d, status: 'approved' } : d); }}
-                  className="px-4 py-2 rounded-lg text-sm font-bold text-white bg-brand-600"
+                  onClick={() => {
+                    approveCertificate(detail, approverName.trim());
+                    setDetail(d => d ? { ...d, status: 'approved', approvedBy: approverName.trim(), approvalDate: new Date().toISOString().slice(0, 10) } : d);
+                  }}
+                  disabled={!approverName.trim()}
+                  className={`px-4 py-2 rounded-lg text-sm font-bold text-white ${approverName.trim() ? 'bg-brand-600' : 'bg-slate-300 cursor-not-allowed'}`}
                 >Approve Certificate</button>
               )}
               {detail.status === 'approved' && (

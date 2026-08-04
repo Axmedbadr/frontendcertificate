@@ -42,6 +42,8 @@ export interface Certificate {
   feeAmount?: number;
   voucherFileName?: string;
   voucherDataUrl?: string;
+  approvedBy?: string;
+  approvalDate?: string;
 }
 
 export interface Payment {

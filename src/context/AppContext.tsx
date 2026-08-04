@@ -24,7 +24,7 @@ interface AppState {
   addUser: (u: UserEntity) => void;
   updateUser: (id: number, patch: Partial<UserEntity>) => void;
   verifyPayment: (cert: Certificate, account: AccountName) => void;
-  approveCertificate: (cert: Certificate) => void;
+  approveCertificate: (cert: Certificate, approvedBy: string) => void;
   markCertificatePrinted: (cert: Certificate) => void;
   speciesRates: Record<string, number>;
   auditLog: { id: number; text: string; date: string }[];
@@ -65,9 +65,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setAuditLog(prev => [{ id: Date.now(), text: `Payment verified for ${cert.certificate_number} — $${amount} into ${account}`, date: new Date().toISOString() }, ...prev]);
   };
 
-  const approveCertificate = (cert: Certificate) => {
-    updateCertificateStatus(cert.id, 'approved');
-    setAuditLog(prev => [{ id: Date.now(), text: `${cert.certificate_number} approved`, date: new Date().toISOString() }, ...prev]);
+  const approveCertificate = (cert: Certificate, approvedBy: string) => {
+    const approvalDate = new Date().toISOString().slice(0, 10);
+    setCertificates(prev => prev.map(c => c.id === cert.id ? { ...c, status: 'approved', approvedBy, approvalDate } : c));
+    setAuditLog(prev => [{ id: Date.now(), text: `${cert.certificate_number} approved by ${approvedBy}`, date: new Date().toISOString() }, ...prev]);
   };
 
   const markCertificatePrinted = (cert: Certificate) => {
