@@ -19,7 +19,9 @@ interface AppState {
   accounts: Record<AccountName, number>;
   incomes: IncomeExpense[]; expenses: IncomeExpense[];
   addIncome: (i: IncomeExpense) => void; addExpense: (e: IncomeExpense) => void;
-  exporters: ExporterEntity[]; importers: ImporterEntity[];
+  exporters: ExporterEntity[];
+  addExporter: (e: ExporterEntity) => void;
+  importers: ImporterEntity[];
   users: UserEntity[];
   addUser: (u: UserEntity) => void;
   updateUser: (id: number, patch: Partial<UserEntity>) => void;
@@ -41,6 +43,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [incomes, setIncomes] = useState<IncomeExpense[]>(initialIncomes);
   const [expenses, setExpenses] = useState<IncomeExpense[]>(initialExpenses);
   const [users, setUsers] = useState<UserEntity[]>(initialUsers);
+  const [exporters, setExporters] = useState<ExporterEntity[]>(initialExporters);
   const [auditLog, setAuditLog] = useState<{ id: number; text: string; date: string }[]>([]);
 
   const t = translations[lang];
@@ -80,15 +83,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const updateUser = (id: number, patch: Partial<UserEntity>) =>
     setUsers(prev => prev.map(u => u.id === id ? { ...u, ...patch } : u));
 
+  const addExporter = (e: ExporterEntity) => setExporters(prev => [e, ...prev]);
+
   const value = useMemo<AppState>(() => ({
     lang, setLang, toggleLang: () => setLang(l => l === 'en' ? 'ar' : 'en'), t,
     currentRole, setCurrentRole,
     certificates, addCertificate, updateCertificateStatus,
     payments, accounts, incomes, expenses, addIncome, addExpense,
-    exporters: initialExporters, importers: initialImporters,
+    exporters, addExporter, importers: initialImporters,
     users, addUser, updateUser,
     verifyPayment, approveCertificate, markCertificatePrinted, speciesRates: speciesRateDefaults, auditLog,
-  }), [lang, currentRole, certificates, payments, accounts, incomes, expenses, users, auditLog]);
+  }), [lang, currentRole, certificates, payments, accounts, incomes, expenses, users, exporters, auditLog]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp, emptyAnimalRow } from '../context/AppContext';
 import { AnimalRow, Certificate } from '../types';
+import Modal from '../components/Modal';
 import { X } from 'lucide-react';
+
+const NEW_EXPORTER = '__new_exporter__';
 
 const speciesOptions = ['Cattle', 'Sheep', 'Goat', 'Camel'];
 const testTypeOptions = ['ELISA', 'PCR', 'Serological', 'Rose Bengal'];
@@ -14,8 +17,10 @@ const quarantinePlaceOptions = [
 ];
 
 export default function FieldCollector() {
-  const { t, addCertificate, speciesRates } = useApp();
+  const { t, addCertificate, speciesRates, exporters, addExporter } = useApp();
   const navigate = useNavigate();
+  const [showNewExporter, setShowNewExporter] = useState(false);
+  const [newExporterForm, setNewExporterForm] = useState({ name: '', contact: '', phone: '', license: '' });
   const [form, setForm] = useState({
     exporter: '', importer: '', country: '', port: '', transport: '', loadingPlace: '',
     clinicalExam: '', quarantineDays: '', quarantinePlace: '', rvf: '', fmd: '', brucella: '',
@@ -35,6 +40,18 @@ export default function FieldCollector() {
     const reader = new FileReader();
     reader.onload = () => setVoucherDataUrl(reader.result as string);
     reader.readAsDataURL(file);
+  };
+
+  const handleExporterChange = (value: string) => {
+    if (value === NEW_EXPORTER) { setNewExporterForm({ name: '', contact: '', phone: '', license: '' }); setShowNewExporter(true); return; }
+    setForm(f => ({ ...f, exporter: value }));
+  };
+
+  const saveNewExporter = () => {
+    if (!newExporterForm.name.trim()) return;
+    addExporter({ id: Date.now(), name: newExporterForm.name.trim(), contact: newExporterForm.contact.trim(), phone: newExporterForm.phone.trim(), license: newExporterForm.license.trim() });
+    setForm(f => ({ ...f, exporter: newExporterForm.name.trim() }));
+    setShowNewExporter(false);
   };
 
   const updateRow = (i: number, key: keyof AnimalRow, val: string) =>
@@ -93,8 +110,10 @@ export default function FieldCollector() {
         <h3 className="text-sm font-bold mb-3.5">{t.fcCustomerInfo}</h3>
         <div className="grid sm:grid-cols-2 gap-3.5">
           <label className={labelCls}>{t.fieldExporter}
-            <select className={inputCls} value={form.exporter} onChange={e => setForm(f => ({ ...f, exporter: e.target.value }))}>
-              <option value="">—</option><option>Horn Exports Co.</option><option>Al-Amin Livestock Trading</option><option>Berbera Livestock Ltd</option><option>Golden Gate Traders</option>
+            <select className={inputCls} value={form.exporter} onChange={e => handleExporterChange(e.target.value)}>
+              <option value="">—</option>
+              {exporters.map(ex => <option key={ex.id} value={ex.name}>{ex.name}</option>)}
+              <option value={NEW_EXPORTER}>+ Add New Exporter…</option>
             </select>
           </label>
           <label className={labelCls}>{t.fieldImporter}
@@ -261,6 +280,32 @@ export default function FieldCollector() {
       </div>
 
       <button onClick={submit} className="bg-brand-600 text-white px-6 py-3 rounded-lg text-sm font-bold self-start">Submit Application</button>
+
+      <Modal open={showNewExporter} onClose={() => setShowNewExporter(false)}>
+        <h2 className="text-lg font-extrabold mb-4">Add New Exporter</h2>
+        <div className="flex flex-col gap-3.5 mb-5">
+          <label className={labelCls}>Name *
+            <input className={inputCls} value={newExporterForm.name} onChange={e => setNewExporterForm(f => ({ ...f, name: e.target.value }))} />
+          </label>
+          <label className={labelCls}>Contact Person
+            <input className={inputCls} value={newExporterForm.contact} onChange={e => setNewExporterForm(f => ({ ...f, contact: e.target.value }))} />
+          </label>
+          <label className={labelCls}>Phone
+            <input className={inputCls} value={newExporterForm.phone} onChange={e => setNewExporterForm(f => ({ ...f, phone: e.target.value }))} />
+          </label>
+          <label className={labelCls}>License Number
+            <input className={inputCls} value={newExporterForm.license} onChange={e => setNewExporterForm(f => ({ ...f, license: e.target.value }))} />
+          </label>
+        </div>
+        <div className="flex justify-end gap-2.5">
+          <button onClick={() => setShowNewExporter(false)} className="px-4 py-2 rounded-lg text-sm font-bold bg-slate-100">Cancel</button>
+          <button
+            onClick={saveNewExporter}
+            disabled={!newExporterForm.name.trim()}
+            className={`px-4 py-2 rounded-lg text-sm font-bold text-white ${newExporterForm.name.trim() ? 'bg-brand-600' : 'bg-slate-300 cursor-not-allowed'}`}
+          >Add Exporter</button>
+        </div>
+      </Modal>
     </div>
   );
 }

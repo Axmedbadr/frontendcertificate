@@ -22,7 +22,7 @@ function DetailRow({ label, value }: { label: string; value?: string | number | 
 }
 
 export default function CertificateList() {
-  const { certificates, approveCertificate, markCertificatePrinted } = useApp();
+  const { certificates, approveCertificate, markCertificatePrinted, currentRole } = useApp();
   const [filter, setFilter] = useState<CertStatus | 'all'>('all');
   const [detail, setDetail] = useState<Certificate | null>(null);
   const [printTarget, setPrintTarget] = useState<Certificate | null>(null);
@@ -33,8 +33,10 @@ export default function CertificateList() {
   useEffect(() => {
     if (!printTarget) return;
     const handleAfterPrint = () => {
-      markCertificatePrinted(printTarget);
-      setDetail(d => (d && d.id === printTarget.id ? { ...d, status: 'printed' } : d));
+      if (printTarget.status !== 'printed') {
+        markCertificatePrinted(printTarget);
+        setDetail(d => (d && d.id === printTarget.id ? { ...d, status: 'printed' } : d));
+      }
       setPrintTarget(null);
     };
     window.addEventListener('afterprint', handleAfterPrint);
@@ -177,6 +179,12 @@ export default function CertificateList() {
                   onClick={() => setPrintTarget(detail)}
                   className="px-4 py-2 rounded-lg text-sm font-bold text-white bg-brand-600"
                 >Print Certificate</button>
+              )}
+              {detail.status === 'printed' && currentRole === 'Admin' && (
+                <button
+                  onClick={() => setPrintTarget(detail)}
+                  className="px-4 py-2 rounded-lg text-sm font-bold text-white bg-brand-600"
+                >Reprint Certificate</button>
               )}
             </div>
           </>
