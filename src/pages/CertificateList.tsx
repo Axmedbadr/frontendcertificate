@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import { useApp } from '../context/AppContext';
 import StatusBadge from '../components/StatusBadge';
 import Modal from '../components/Modal';
 import CertificatePrint from '../components/CertificatePrint';
 import { Certificate, CertStatus } from '../types';
-import { Plus } from 'lucide-react';
+import { Plus, Download } from 'lucide-react';
 
 const filters: (CertStatus | 'all')[] = ['all','draft','submitted','payment_approved','approved','printed','cancelled'];
 
@@ -26,6 +28,8 @@ export default function CertificateList() {
   const [filter, setFilter] = useState<CertStatus | 'all'>('all');
   const [detail, setDetail] = useState<Certificate | null>(null);
   const [printTarget, setPrintTarget] = useState<Certificate | null>(null);
+  const [pdfTarget, setPdfTarget] = useState<Certificate | null>(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
   const [approverName, setApproverName] = useState('');
   const navigate = useNavigate();
   const rows = certificates.filter(c => filter === 'all' || c.status === filter);
@@ -43,6 +47,39 @@ export default function CertificateList() {
     const t = setTimeout(() => window.print(), 50);
     return () => { window.removeEventListener('afterprint', handleAfterPrint); clearTimeout(t); };
   }, [printTarget, markCertificatePrinted]);
+
+  useEffect(() => {
+    if (!pdfTarget) return;
+    let cancelled = false;
+    (async () => {
+      setPdfBusy(true);
+      await new Promise(r => setTimeout(r, 100));
+      const el = document.getElementById('certificate-print-area');
+      if (!el || cancelled) { setPdfBusy(false); setPdfTarget(null); return; }
+      const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff' });
+      if (cancelled) return;
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const imgData = canvas.toDataURL('image/png');
+      let heightLeft = imgHeight;
+      let position = 0;
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      while (heightLeft > 0) {
+        position -= pageHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      pdf.save(`${pdfTarget.certificate_number}.pdf`);
+      setPdfBusy(false);
+      setPdfTarget(null);
+    })();
+    return () => { cancelled = true; };
+  }, [pdfTarget]);
 
   return (
     <div>
@@ -187,12 +224,19 @@ export default function CertificateList() {
                   className="px-4 py-2 rounded-lg text-sm font-bold text-white bg-brand-600"
                 >Reprint Certificate</button>
               )}
+              {(detail.status === 'approved' || detail.status === 'printed') && currentRole === 'Admin' && (
+                <button
+                  onClick={() => setPdfTarget(detail)}
+                  disabled={pdfBusy}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold text-white ${pdfBusy ? 'bg-slate-300 cursor-not-allowed' : 'bg-slate-800'}`}
+                ><Download size={15} /> {pdfBusy ? 'Preparing…' : 'Download PDF'}</button>
+              )}
             </div>
           </>
         )}
       </Modal>
 
-      {printTarget && <CertificatePrint cert={printTarget} />}
+      {(printTarget || pdfTarget) && <CertificatePrint cert={(printTarget || pdfTarget) as Certificate} />}
     </div>
   );
 }
