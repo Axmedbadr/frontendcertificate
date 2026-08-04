@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { Menu, X, LayoutDashboard, FileText, Wallet, TrendingUp, TrendingDown, Truck,
-  Building2, PawPrint, BarChart3, Users, Settings as SettingsIcon, ClipboardList } from 'lucide-react';
+  Building2, PawPrint, BarChart3, Users, Settings as SettingsIcon, ClipboardList, History } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { Role } from '../types';
 
@@ -17,6 +17,7 @@ export default function Layout() {
     { key: 'dashboard', label: t.dashboard, icon: <LayoutDashboard size={18} />, path: '/dashboard', roles: ['Admin', 'Veterinary Officer', 'Data Entry Clerk', 'Finance Officer'] },
     { key: 'observer', label: t.observerDashboard, icon: <LayoutDashboard size={18} />, path: '/observer', roles: ['Observer'] },
     { key: 'fieldCollector', label: t.roleFieldCollector, icon: <ClipboardList size={18} />, path: '/field-collector', roles: ['Data Field Collector'] },
+    { key: 'fieldCollectorHistory', label: 'Submission History', icon: <History size={18} />, path: '/field-collector/history', roles: ['Data Field Collector'] },
     { key: 'certificates', label: t.certificateManagement, icon: <FileText size={18} />, path: '/certificates', roles: ['Admin', 'Veterinary Officer', 'Data Entry Clerk'] },
     { key: 'exporters', label: t.exporters, icon: <Truck size={18} />, path: '/exporters', roles: ['Admin', 'Data Entry Clerk'] },
     { key: 'importers', label: t.importers, icon: <Building2 size={18} />, path: '/importers', roles: ['Admin', 'Data Entry Clerk'] },
@@ -54,6 +55,7 @@ export default function Layout() {
             <NavLink
               key={item.key}
               to={item.path}
+              end
               onClick={() => setMobileOpen(false)}
               className={({ isActive }) => `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors ${isActive ? 'bg-brand-700 text-white' : 'text-slate-300 hover:bg-slate-800'}`}
             >
@@ -72,7 +74,9 @@ export default function Layout() {
             <button className="lg:hidden p-2 rounded-lg hover:bg-slate-100" onClick={() => setMobileOpen(o => !o)}>
               {mobileOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
-            <h1 className="text-lg font-bold hidden sm:block">{visible.find(v => location.pathname.startsWith(v.path))?.label}</h1>
+            <h1 className="text-lg font-bold hidden sm:block">
+              {(visible.find(v => v.path === location.pathname) || visible.find(v => location.pathname.startsWith(v.path)))?.label}
+            </h1>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <button onClick={toggleLang} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">

@@ -3,6 +3,7 @@ import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Observer from './pages/Observer';
 import FieldCollector from './pages/FieldCollector';
+import FieldCollectorHistory from './pages/FieldCollectorHistory';
 import CertificateList from './pages/CertificateList';
 import CertificateNew from './pages/CertificateNew';
 import CertificateVerify from './pages/CertificateVerify';
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/observer" element={<Observer />} />
         <Route path="/field-collector" element={<FieldCollector />} />
+        <Route path="/field-collector/history" element={<FieldCollectorHistory />} />
         <Route path="/certificates" element={<CertificateList />} />
         <Route path="/certificates/new" element={<CertificateNew />} />
         <Route path="/certificates/verify" element={<CertificateVerify />} />

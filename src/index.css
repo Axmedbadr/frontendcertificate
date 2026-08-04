@@ -5,3 +5,11 @@
 * { box-sizing: border-box; }
 body { margin: 0; font-family: 'Manrope', sans-serif; -webkit-font-smoothing: antialiased; }
 [dir="rtl"] body { font-family: 'Noto Sans Arabic', sans-serif; }
+
+#certificate-print-area { position: fixed; left: -10000px; top: 0; }
+
+@media print {
+  body * { visibility: hidden; }
+  #certificate-print-area, #certificate-print-area * { visibility: visible; }
+  #certificate-print-area { position: absolute; top: 0; left: 0; width: 100%; }
+}

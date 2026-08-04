@@ -19,8 +19,13 @@ interface AppState {
   accounts: Record<AccountName, number>;
   incomes: IncomeExpense[]; expenses: IncomeExpense[];
   addIncome: (i: IncomeExpense) => void; addExpense: (e: IncomeExpense) => void;
-  exporters: ExporterEntity[]; importers: ImporterEntity[]; users: UserEntity[];
+  exporters: ExporterEntity[]; importers: ImporterEntity[];
+  users: UserEntity[];
+  addUser: (u: UserEntity) => void;
+  updateUser: (id: number, patch: Partial<UserEntity>) => void;
   verifyPayment: (cert: Certificate, account: AccountName) => void;
+  approveCertificate: (cert: Certificate) => void;
+  markCertificatePrinted: (cert: Certificate) => void;
   speciesRates: Record<string, number>;
   auditLog: { id: number; text: string; date: string }[];
 }
@@ -35,6 +40,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [accounts, setAccounts] = useState(initialAccounts);
   const [incomes, setIncomes] = useState<IncomeExpense[]>(initialIncomes);
   const [expenses, setExpenses] = useState<IncomeExpense[]>(initialExpenses);
+  const [users, setUsers] = useState<UserEntity[]>(initialUsers);
   const [auditLog, setAuditLog] = useState<{ id: number; text: string; date: string }[]>([]);
 
   const t = translations[lang];
@@ -59,14 +65,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setAuditLog(prev => [{ id: Date.now(), text: `Payment verified for ${cert.certificate_number} — $${amount} into ${account}`, date: new Date().toISOString() }, ...prev]);
   };
 
+  const approveCertificate = (cert: Certificate) => {
+    updateCertificateStatus(cert.id, 'approved');
+    setAuditLog(prev => [{ id: Date.now(), text: `${cert.certificate_number} approved`, date: new Date().toISOString() }, ...prev]);
+  };
+
+  const markCertificatePrinted = (cert: Certificate) => {
+    updateCertificateStatus(cert.id, 'printed');
+    setAuditLog(prev => [{ id: Date.now(), text: `${cert.certificate_number} marked as printed`, date: new Date().toISOString() }, ...prev]);
+  };
+
+  const addUser = (u: UserEntity) => setUsers(prev => [u, ...prev]);
+  const updateUser = (id: number, patch: Partial<UserEntity>) =>
+    setUsers(prev => prev.map(u => u.id === id ? { ...u, ...patch } : u));
+
   const value = useMemo<AppState>(() => ({
     lang, setLang, toggleLang: () => setLang(l => l === 'en' ? 'ar' : 'en'), t,
     currentRole, setCurrentRole,
     certificates, addCertificate, updateCertificateStatus,
     payments, accounts, incomes, expenses, addIncome, addExpense,
-    exporters: initialExporters, importers: initialImporters, users: initialUsers,
-    verifyPayment, speciesRates: speciesRateDefaults, auditLog,
-  }), [lang, currentRole, certificates, payments, accounts, incomes, expenses, auditLog]);
+    exporters: initialExporters, importers: initialImporters,
+    users, addUser, updateUser,
+    verifyPayment, approveCertificate, markCertificatePrinted, speciesRates: speciesRateDefaults, auditLog,
+  }), [lang, currentRole, certificates, payments, accounts, incomes, expenses, users, auditLog]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

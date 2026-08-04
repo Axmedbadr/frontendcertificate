@@ -1,17 +1,29 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp, emptyAnimalRow } from '../context/AppContext';
 import { AnimalRow, Certificate } from '../types';
 import { X } from 'lucide-react';
 
 const speciesOptions = ['Cattle', 'Sheep', 'Goat', 'Camel'];
+const testTypeOptions = ['ELISA', 'PCR', 'Serological', 'Rose Bengal'];
+const quarantinePlaceOptions = [
+  'Saudi Emirates livestock quarantine',
+  'Berbera union animal quarantine',
+  'berbera National quarantine',
+  'KSA international livestock quarantine center Berbera',
+];
 
 export default function FieldCollector() {
   const { t, addCertificate, speciesRates } = useApp();
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     exporter: '', importer: '', country: '', port: '', transport: '', loadingPlace: '',
-    clinicalExam: '', quarantineDays: '', quarantinePlace: '', rvf: '', fmd: '', brucella: '', testType: '',
+    clinicalExam: '', quarantineDays: '', quarantinePlace: '', rvf: '', fmd: '', brucella: '',
     vaccination: '', remarks: '',
   });
+  const [testTypes, setTestTypes] = useState<string[]>([]);
+  const toggleTestType = (opt: string) =>
+    setTestTypes(prev => prev.includes(opt) ? prev.filter(o => o !== opt) : [...prev, opt]);
   const [rates, setRates] = useState<Record<string, number>>({ ...speciesRates });
   const [rows, setRows] = useState<AnimalRow[]>([emptyAnimalRow()]);
   const [voucherFile, setVoucherFile] = useState<File | null>(null);
@@ -44,6 +56,10 @@ export default function FieldCollector() {
       alert('Please fill in Exporter, Importer, Country, Port, and at least one animal row.');
       return;
     }
+    if (!form.quarantinePlace) {
+      alert('Please select a Quarantine Place.');
+      return;
+    }
     const first = validRows[0];
     const cert: Certificate = {
       id: Date.now(),
@@ -55,16 +71,17 @@ export default function FieldCollector() {
       status: 'submitted', issue_date: new Date().toISOString().slice(0,10), officer: 'Field Collector',
       breed: first.breed, sex: first.sex, age: first.age, earTag: first.earTag,
       quarantineDays: form.quarantineDays, quarantinePlace: form.quarantinePlace,
-      rvf: form.rvf, fmd: form.fmd, brucella: form.brucella, testType: form.testType,
+      rvf: form.rvf, fmd: form.fmd, brucella: form.brucella, testType: testTypes.join(', '),
       vaccination: form.vaccination, clinicalExam: form.clinicalExam, remarks: form.remarks,
-      feeAmount: 500 + totalFee,
+      feeAmount: totalFee,
       voucherFileName: voucherFile?.name, voucherDataUrl: voucherDataUrl || undefined,
     };
     addCertificate(cert);
-    setForm({ exporter:'', importer:'', country:'', port:'', transport:'', loadingPlace:'', clinicalExam:'', quarantineDays:'', quarantinePlace:'', rvf:'', fmd:'', brucella:'', testType:'', vaccination:'', remarks:'' });
+    setForm({ exporter:'', importer:'', country:'', port:'', transport:'', loadingPlace:'', clinicalExam:'', quarantineDays:'', quarantinePlace:'', rvf:'', fmd:'', brucella:'', vaccination:'', remarks:'' });
+    setTestTypes([]);
     setRows([emptyAnimalRow()]);
     onVoucherChange(null);
-    alert('Application submitted — waiting for payment verification');
+    navigate('/field-collector/history', { state: { justSubmitted: cert.certificate_number } });
   };
 
   const inputCls = 'px-2.5 py-2 rounded-lg border border-slate-300 text-sm w-full';
@@ -151,8 +168,11 @@ export default function FieldCollector() {
           <label className={labelCls}>{t.fieldQuarantineDays}
             <input type="number" className={inputCls} value={form.quarantineDays} onChange={e => setForm(f => ({ ...f, quarantineDays: e.target.value }))} />
           </label>
-          <label className={labelCls}>{t.fieldQuarantinePlace}
-            <input className={inputCls} value={form.quarantinePlace} onChange={e => setForm(f => ({ ...f, quarantinePlace: e.target.value }))} />
+          <label className={labelCls}>{t.fieldQuarantinePlace} *
+            <select className={inputCls} value={form.quarantinePlace} onChange={e => setForm(f => ({ ...f, quarantinePlace: e.target.value }))}>
+              <option value="">—</option>
+              {quarantinePlaceOptions.map(q => <option key={q}>{q}</option>)}
+            </select>
           </label>
           <label className={labelCls}>{t.fieldRVF}
             <select className={inputCls} value={form.rvf} onChange={e => setForm(f => ({ ...f, rvf: e.target.value }))}>
@@ -169,14 +189,21 @@ export default function FieldCollector() {
               <option value="">—</option><option>Negative</option><option>Positive</option>
             </select>
           </label>
-          <label className={labelCls}>{t.fieldTestType}
-            <select className={inputCls} value={form.testType} onChange={e => setForm(f => ({ ...f, testType: e.target.value }))}>
-              <option value="">—</option><option>ELISA</option><option>PCR</option><option>Serological</option><option>Rose Bengal</option>
-            </select>
-          </label>
+          <div className={`${labelCls} sm:col-span-2`}>{t.fieldTestType}
+            <div className="flex flex-wrap gap-1.5">
+              {testTypeOptions.map(opt => (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => toggleTestType(opt)}
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold border ${testTypes.includes(opt) ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-slate-600 border-slate-300'}`}
+                >{opt}</button>
+              ))}
+            </div>
+          </div>
           <label className={labelCls}>{t.fieldVaccination}
             <select className={inputCls} value={form.vaccination} onChange={e => setForm(f => ({ ...f, vaccination: e.target.value }))}>
-              <option value="">—</option><option>Up to date</option><option>Overdue</option>
+              <option value="">—</option><option>Vaccinated</option><option>Not Vaccinated</option>
             </select>
           </label>
           <label className={`${labelCls} sm:col-span-3`}>{t.fieldRemarks}
