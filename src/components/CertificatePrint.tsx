@@ -1,5 +1,5 @@
 import { Certificate } from '../types';
-import somaliaEmblem from '../assets/somalia-emblem.png';
+import { somaliaEmblemDataUri } from '../assets/somaliaEmblemDataUri';
 import { QrCode } from 'lucide-react';
 
 const cellCls = 'border border-slate-800 p-1.5 align-top';
@@ -10,7 +10,7 @@ function FieldCell({ en, ar, value }: { en: string; ar: string; value?: string }
     <td className={cellCls}>
       <div className="font-bold text-[11px]">{en}</div>
       <div dir="rtl" className="text-[11px]">{ar}</div>
-      <div className="mt-2 min-h-[14px] text-[11px]">{value}</div>
+      <div className="mt-2 min-h-[14px] text-[11px]">{value || ' '}</div>
     </td>
   );
 }
@@ -58,11 +58,13 @@ export default function CertificatePrint({ cert }: { cert: Certificate }) {
     : cert.vaccination === 'Not Vaccinated' ? 'were not vaccinated' : 'were / were not vaccinated';
   const vaccinationAr = cert.vaccination === 'Vaccinated' ? 'تم تحصين جميع الحيوانات'
     : cert.vaccination === 'Not Vaccinated' ? 'لم يتم تحصين الحيوانات' : 'تم تحصين / لم يتم تحصين الحيوانات';
+  const placeOfLoading = [cert.port, cert.loadingPlace].filter(Boolean).join(' — ');
+  const destination = [cert.destinationPort, cert.country].filter(Boolean).join(', ');
 
   return (
     <div id="certificate-print-area" className="p-8 text-slate-900">
       <div className="flex items-start justify-between mb-2">
-        <img src={somaliaEmblem} alt="Federal Republic of Somalia" className="w-20 h-16 object-contain" />
+        <img src={somaliaEmblemDataUri} alt="Federal Republic of Somalia" className="w-20 h-16 object-contain" />
         <div className="flex-1 text-center px-3">
           <div className="font-extrabold text-base">Federal Republic of Somalia</div>
           <div className="text-sm">Ministry of Livestock Foresty and Range</div>
@@ -85,11 +87,11 @@ export default function CertificatePrint({ cert }: { cert: Certificate }) {
             <FieldCell en="Name and Address of Importer" ar="اسم المستورد وعنوانه" value={cert.importer} />
           </tr>
           <tr>
-            <FieldCell en="Country of Origin" ar="بلد المنشأ" value={cert.country} />
-            <FieldCell en="Destination (Port/Country)" ar="ميناء الوصول" value={cert.port} />
+            <FieldCell en="Country of Origin" ar="بلد المنشأ" value="Somalia" />
+            <FieldCell en="Destination (Port/Country)" ar="ميناء الوصول" value={destination} />
           </tr>
           <tr>
-            <FieldCell en="Place of Loading" ar="منفذ التصدير" value={cert.loadingPlace} />
+            <FieldCell en="Place of Loading" ar="منفذ التصدير" value={placeOfLoading} />
             <FieldCell en="Means of Transport" ar="وسيلة النقل" value={cert.transport} />
           </tr>
         </tbody>

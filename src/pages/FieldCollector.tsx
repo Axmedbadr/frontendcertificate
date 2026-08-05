@@ -22,7 +22,7 @@ export default function FieldCollector() {
   const [showNewExporter, setShowNewExporter] = useState(false);
   const [newExporterForm, setNewExporterForm] = useState({ name: '', contact: '', phone: '', license: '' });
   const [form, setForm] = useState({
-    exporter: '', importer: '', country: '', port: '', transport: '', loadingPlace: '',
+    exporter: '', importer: '', country: '', destinationPort: '', port: '', transport: '', loadingPlace: '',
     clinicalExam: '', quarantineDays: '', quarantinePlace: '', rvf: '', fmd: '', brucella: '',
     vaccination: '', remarks: '',
   });
@@ -82,7 +82,7 @@ export default function FieldCollector() {
       id: Date.now(),
       certificate_number: 'LCS-2026-0' + (150 + Math.floor(Math.random() * 50)),
       exporter: form.exporter, importer: form.importer, country: form.country,
-      port: form.port, transport: form.transport, loadingPlace: form.loadingPlace,
+      destinationPort: form.destinationPort, port: form.port, transport: form.transport, loadingPlace: form.loadingPlace,
       animals: validRows.map(r => `${r.species} ×${r.quantity}`).join(', '),
       animalRows: validRows.map(r => ({ ...r, rate: String(rates[r.species] || 0) })),
       status: 'submitted', issue_date: new Date().toISOString().slice(0,10), officer: 'Field Collector',
@@ -94,7 +94,7 @@ export default function FieldCollector() {
       voucherFileName: voucherFile?.name, voucherDataUrl: voucherDataUrl || undefined,
     };
     addCertificate(cert);
-    setForm({ exporter:'', importer:'', country:'', port:'', transport:'', loadingPlace:'', clinicalExam:'', quarantineDays:'', quarantinePlace:'', rvf:'', fmd:'', brucella:'', vaccination:'', remarks:'' });
+    setForm({ exporter:'', importer:'', country:'', destinationPort:'', port:'', transport:'', loadingPlace:'', clinicalExam:'', quarantineDays:'', quarantinePlace:'', rvf:'', fmd:'', brucella:'', vaccination:'', remarks:'' });
     setTestTypes([]);
     setRows([emptyAnimalRow()]);
     onVoucherChange(null);
@@ -125,6 +125,9 @@ export default function FieldCollector() {
             <select className={inputCls} value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))}>
               <option value="">—</option><option>Saudi Arabia</option><option>UAE</option>
             </select>
+          </label>
+          <label className={labelCls}>{t.fieldDestinationPort}
+            <input className={inputCls} placeholder="e.g. Jeddah Port" value={form.destinationPort} onChange={e => setForm(f => ({ ...f, destinationPort: e.target.value }))} />
           </label>
           <label className={labelCls}>{t.fieldPort}
             <select className={inputCls} value={form.port} onChange={e => setForm(f => ({ ...f, port: e.target.value }))}>

@@ -19,6 +19,7 @@ export interface Certificate {
   importer: string;
   country: string;
   port?: string;
+  destinationPort?: string;
   transport?: string;
   loadingPlace?: string;
   animals: string;

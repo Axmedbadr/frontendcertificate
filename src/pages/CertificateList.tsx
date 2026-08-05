@@ -11,6 +11,20 @@ import { Plus, Download } from 'lucide-react';
 
 const filters: (CertStatus | 'all')[] = ['all','draft','submitted','payment_approved','approved','printed','cancelled'];
 
+function waitForImages(container: HTMLElement, timeoutMs = 3000): Promise<void> {
+  const imgs = Array.from(container.querySelectorAll('img'));
+  if (imgs.length === 0) return Promise.resolve();
+  const loaded = Promise.all(imgs.map(img => {
+    if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+    return new Promise<void>(resolve => {
+      img.addEventListener('load', () => resolve(), { once: true });
+      img.addEventListener('error', () => resolve(), { once: true });
+    });
+  })).then(() => undefined);
+  const timeout = new Promise<void>(resolve => setTimeout(resolve, timeoutMs));
+  return Promise.race([loaded, timeout]);
+}
+
 function DetailRow({ label, value }: { label: string; value?: string | number | null }) {
   const isEmpty = value === undefined || value === null || value === '';
   return (
@@ -36,6 +50,7 @@ export default function CertificateList() {
 
   useEffect(() => {
     if (!printTarget) return;
+    let cancelled = false;
     const handleAfterPrint = () => {
       if (printTarget.status !== 'printed') {
         markCertificatePrinted(printTarget);
@@ -44,8 +59,13 @@ export default function CertificateList() {
       setPrintTarget(null);
     };
     window.addEventListener('afterprint', handleAfterPrint);
-    const t = setTimeout(() => window.print(), 50);
-    return () => { window.removeEventListener('afterprint', handleAfterPrint); clearTimeout(t); };
+    (async () => {
+      await new Promise(r => setTimeout(r, 50));
+      const el = document.getElementById('certificate-print-area');
+      if (el) await waitForImages(el);
+      if (!cancelled) window.print();
+    })();
+    return () => { cancelled = true; window.removeEventListener('afterprint', handleAfterPrint); };
   }, [printTarget, markCertificatePrinted]);
 
   useEffect(() => {
@@ -53,9 +73,11 @@ export default function CertificateList() {
     let cancelled = false;
     (async () => {
       setPdfBusy(true);
-      await new Promise(r => setTimeout(r, 100));
+      await new Promise(r => setTimeout(r, 50));
       const el = document.getElementById('certificate-print-area');
       if (!el || cancelled) { setPdfBusy(false); setPdfTarget(null); return; }
+      await waitForImages(el);
+      if (cancelled) return;
       const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff' });
       if (cancelled) return;
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
@@ -63,15 +85,15 @@ export default function CertificateList() {
       const pageHeight = pdf.internal.pageSize.getHeight();
       const imgWidth = pageWidth;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvas.toDataURL('image/jpeg', 0.92);
       let heightLeft = imgHeight;
       let position = 0;
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
       while (heightLeft > 0) {
         position -= pageHeight;
         pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
       }
       pdf.save(`${pdfTarget.certificate_number}.pdf`);
@@ -137,8 +159,10 @@ export default function CertificateList() {
               <div className="text-xs font-bold text-slate-500 uppercase mb-1.5">Shipment</div>
               <DetailRow label="Exporter" value={detail.exporter} />
               <DetailRow label="Importer" value={detail.importer} />
-              <DetailRow label="Country" value={detail.country} />
-              <DetailRow label="Port" value={detail.port} />
+              <DetailRow label="Country of Origin" value="Somalia" />
+              <DetailRow label="Destination Port" value={detail.destinationPort} />
+              <DetailRow label="Destination Country" value={detail.country} />
+              <DetailRow label="Port of Loading" value={detail.port} />
               <DetailRow label="Transport" value={detail.transport} />
               <DetailRow label="Loading Place" value={detail.loadingPlace} />
             </div>

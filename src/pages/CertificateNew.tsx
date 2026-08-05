@@ -10,7 +10,7 @@ export default function CertificateNew() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
-    exporter: '', importer: '', country: '', port: '', transport: '', loadingPlace: '',
+    exporter: '', importer: '', country: '', destinationPort: '', port: '', transport: '', loadingPlace: '',
     quarantineDays: '', rvf: '', brucella: '', vaccination: '', clinicalExam: '',
   });
   const [rows, setRows] = useState<AnimalRow[]>([emptyAnimalRow()]);
@@ -25,6 +25,7 @@ export default function CertificateNew() {
     const cert: Certificate = {
       id: Date.now(), certificate_number: 'LCS-2026-0' + (150 + Math.floor(Math.random() * 50)),
       exporter: form.exporter || '—', importer: form.importer || '—', country: form.country || '—',
+      destinationPort: form.destinationPort, port: form.port, transport: form.transport, loadingPlace: form.loadingPlace,
       animals: rows.filter(r => r.species).map(r => `${r.species} ×${r.quantity}`).join(', '),
       animalRows: rows, status, issue_date: new Date().toISOString().slice(0,10), officer: 'Dr. Ahmed Nur',
       quarantineDays: form.quarantineDays, rvf: form.rvf, brucella: form.brucella,
@@ -49,8 +50,9 @@ export default function CertificateNew() {
         <div className="bg-white border border-slate-200 rounded-xl p-5 grid sm:grid-cols-2 gap-3.5">
           <label className={labelCls}>Exporter<input className={inputCls} value={form.exporter} onChange={e => setForm(f => ({ ...f, exporter: e.target.value }))} /></label>
           <label className={labelCls}>Importer<input className={inputCls} value={form.importer} onChange={e => setForm(f => ({ ...f, importer: e.target.value }))} /></label>
-          <label className={labelCls}>Country<input className={inputCls} value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} /></label>
-          <label className={labelCls}>Port<input className={inputCls} value={form.port} onChange={e => setForm(f => ({ ...f, port: e.target.value }))} /></label>
+          <label className={labelCls}>Destination Country<input className={inputCls} value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} /></label>
+          <label className={labelCls}>Destination Port<input className={inputCls} value={form.destinationPort} onChange={e => setForm(f => ({ ...f, destinationPort: e.target.value }))} /></label>
+          <label className={labelCls}>Port of Loading<input className={inputCls} value={form.port} onChange={e => setForm(f => ({ ...f, port: e.target.value }))} /></label>
         </div>
       )}
 
@@ -94,8 +96,9 @@ export default function CertificateNew() {
           <div className="grid sm:grid-cols-2 gap-3 text-sm">
             <div><b>Exporter:</b> {form.exporter || '—'}</div>
             <div><b>Importer:</b> {form.importer || '—'}</div>
-            <div><b>Country:</b> {form.country || '—'}</div>
-            <div><b>Port:</b> {form.port || '—'}</div>
+            <div><b>Destination Country:</b> {form.country || '—'}</div>
+            <div><b>Destination Port:</b> {form.destinationPort || '—'}</div>
+            <div><b>Port of Loading:</b> {form.port || '—'}</div>
           </div>
           <div className="flex gap-2.5 mt-8">
             <button onClick={() => submit('draft')} className="px-4 py-2 rounded-lg text-sm font-bold bg-slate-100">Save Draft</button>
